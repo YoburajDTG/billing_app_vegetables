@@ -1,10 +1,31 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 
-class BillItemSchema(BaseModel):
-    name: str
-    qty: float
-    price: float
+class BillItemCreate(BaseModel):
+    vegetable_id: int
+    qty_kg: float
+    price_override: Optional[float] = None
 
 class BillCreate(BaseModel):
-    items: List[BillItemSchema]
+    customer_name: Optional[str] = None
+    items: List[BillItemCreate]
+
+class BillItemResponse(BaseModel):
+    vegetable_id: int
+    vegetable_name: str
+    qty_kg: float
+    price: float
+    subtotal: float
+
+class BillResponse(BaseModel):
+    id: int
+    bill_number: str
+    shop_name: str
+    customer_name: Optional[str]
+    total_amount: float
+    created_at: datetime
+    items: List[BillItemResponse]
+
+    class Config:
+        from_attributes = True

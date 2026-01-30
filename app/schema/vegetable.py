@@ -1,11 +1,20 @@
 from pydantic import BaseModel
+from typing import Optional
 
-class VegetableCreate(BaseModel):
+class VegetableBase(BaseModel):
     name: str
-    price_per_kg: float
+    tamil_name: str
+    image_url: Optional[str] = None
+    price_per_kg: float = 0.0
 
-class VegetableResponse(VegetableCreate):
+class VegetableCreate(VegetableBase):
+    pass
+
+class VegetableResponse(VegetableBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class TopVegetableResponse(VegetableResponse):
+    usage_count: int

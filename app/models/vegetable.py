@@ -6,4 +6,6 @@ class Vegetable(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
-    price_per_kg = Column(Float, nullable=False)
+    tamil_name = Column(String, nullable=False)
+    image_url = Column(String, nullable=True)
+    price_per_kg = Column(Float, nullable=False, default=0.0) # Base price or default
