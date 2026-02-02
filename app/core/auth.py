@@ -10,19 +10,13 @@ from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.models.user import User, UserRole
-from app.core.config import get_settings
+from app.core import config  
 
-# -----------------------------
-# Settings
-# -----------------------------
-settings = get_settings()
-SECRET_KEY = settings.SECRET_KEY
+SECRET_KEY = config.SECRET_KEY   
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 
-# -----------------------------
-# Password hashing
-# -----------------------------
+
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
@@ -57,9 +51,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     )
 
 
-# -----------------------------
-# JWT helpers
-# -----------------------------
 def create_access_token(
     data: dict,
     expires_delta: Optional[timedelta] = None
@@ -72,9 +63,6 @@ def create_access_token(
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-# -----------------------------
-# Dependencies
-# -----------------------------
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)

@@ -1,13 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import get_settings
-
-settings = get_settings()
+from app.core import config
 
 DATABASE_URL = (
-    f"{settings.DB_DRIVER}://{settings.DB_USER}:"
-    f"{settings.DB_PASSWORD}@{settings.DB_HOST}:"
-    f"{settings.DB_PORT}/{settings.DB_NAME}"
+    f"{config.DB_DRIVER}://{config.DB_USER}:"
+    f"{config.DB_PASSWORD}@{config.DB_HOST}:"
+    f"{config.DB_PORT}/{config.DB_NAME}"
 )
 
 engine = create_engine(
