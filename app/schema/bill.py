@@ -23,6 +23,7 @@ class BillCreate(BaseModel):
     items: List[BillItemCreate]
     subtotal: float = 0.0
     tax_amount: float = Field(0.0, alias="taxAmount")
+    discount_amount: float = Field(0.0, alias="discountAmount")
     grand_total: float = Field(0.0, alias="grandTotal")
 
     model_config = ConfigDict(populate_by_name=True)
@@ -33,6 +34,7 @@ class BillUpdate(BaseModel):
     items: Optional[List[BillItemCreate]] = None
     subtotal: Optional[float] = None
     tax_amount: Optional[float] = Field(None, alias="taxAmount")
+    discount_amount: Optional[float] = Field(None, alias="discountAmount")
     grand_total: Optional[float] = Field(None, alias="grandTotal")
 
     model_config = ConfigDict(populate_by_name=True)
@@ -40,7 +42,7 @@ class BillUpdate(BaseModel):
 class BillItemResponse(BaseModel):
     vegetable_id: int
     vegetable_name: str = Field(alias="name")
-    tamil_name: str = Field(alias="tamilName")
+    tamil_name: Optional[str] = Field(None, alias="tamilName")
     grade: Optional[str] = None
     qty_kg: float = Field(alias="quantity")
     price: float
@@ -51,10 +53,11 @@ class BillItemResponse(BaseModel):
 class BillResponse(BaseModel):
     id: int
     bill_number: str = Field(alias="billNumber")
-    shop_name: str = Field(alias="shopName")
+    shop_name: Optional[str] = Field(None, alias="shopName")
     customer_name: Optional[str] = Field(None, alias="customerName")
     subtotal: float = 0.0
     tax_amount: float = Field(0.0, alias="taxAmount")
+    discount_amount: float = Field(0.0, alias="discountAmount")
     total_amount: float = Field(alias="grandTotal")
     billing_type: str = Field(alias="mode")
     created_at: datetime = Field(alias="date")
@@ -68,5 +71,8 @@ class DashboardStats(BaseModel) :
     today_wholesale_total: float = Field(0.0, alias="todayWholesaleTotal")
     total_bills_today: int = Field(0, alias="totalBillsToday")
     top_selling_items: List[str] = Field(default_factory=list, alias="topSellingItems")
+    weekly_revenue: List[float] = Field(default_factory=list, alias="weeklyRevenue")
+    low_stock_count: int = Field(0, alias="lowStockCount")
+    low_stock_items: List[str] = Field(default_factory=list, alias="lowStockItems")
 
     model_config = ConfigDict(populate_by_name=True)

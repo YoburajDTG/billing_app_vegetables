@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.database.database import get_db
 from app.models.bill import Bill, BillItem
 from app.models.inventory import Inventory
@@ -27,14 +27,24 @@ async def create_bill(
         total_amount = 0
         
         # Initialize bill
-        bill_number = bill_in.bill_number or f"BILL-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4].upper()}"
+        # Custom bill number generation: BILL26Y02N001
+        now = datetime.utcnow()
+        year_code = now.strftime('%y') # '26'
+        month_code = now.strftime('%m') # '02'
+        
+        # Get count of bills for this user to generate next sequence number
+        bill_count = db.query(func.count(Bill.id)).filter(Bill.user_id == current_user.id).scalar() or 0
+        sequence = str(bill_count + 1).zfill(3)
+        
+        bill_number = bill_in.bill_number or f"BILL{year_code}Y{month_code}N{sequence}"
         db_bill = Bill(
             bill_number=bill_number,
             user_id=current_user.id,
-            shop_name=bill_in.shop_name or current_user.shop_name or "My Vegetable Shop",
+            shop_name=bill_in.shop_name or current_user.shop_name or "Suji Vegetables",
             customer_name=bill_in.customer_name,
             subtotal=bill_in.subtotal,
             tax_amount=bill_in.tax_amount,
+            discount_amount=bill_in.discount_amount,
             total_amount=0,
             billing_type=bill_in.billing_type
         )
@@ -94,7 +104,11 @@ async def create_bill(
                 )
                 db.add(new_usage)
         
-        db_bill.total_amount = total_amount if total_amount > 0 else bill_in.grand_total
+        # Calculate final totals
+        final_subtotal = total_amount if total_amount > 0 else bill_in.subtotal
+        db_bill.subtotal = final_subtotal
+        db_bill.total_amount = final_subtotal + bill_in.tax_amount - bill_in.discount_amount
+        
         db.commit()
         db.refresh(db_bill)
         
@@ -106,19 +120,6 @@ async def create_bill(
             raise e
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
-@router.get("/{bill_id}", response_model=BillResponse)
-async def get_bill_detail(
-    bill_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Fetch details for the Bill Summary page.
-    """
-    bill = db.query(Bill).filter(Bill.id == bill_id, Bill.user_id == current_user.id).first()
-    if not bill:
-        raise HTTPException(status_code=404, detail="Bill not found")
-    return bill
 
 @router.put("/{bill_id}", response_model=BillResponse)
 async def update_bill(
@@ -168,6 +169,8 @@ async def update_bill(
         db_bill.subtotal = bill_update.subtotal
     if bill_update.tax_amount is not None:
         db_bill.tax_amount = bill_update.tax_amount
+    if bill_update.discount_amount is not None:
+        db_bill.discount_amount = bill_update.discount_amount
     if bill_update.grand_total is not None:
         db_bill.total_amount = bill_update.grand_total
 
@@ -203,12 +206,30 @@ async def get_dashboard_stats(
         .limit(3)\
         .all()
 
+    # Get weekly revenue for the last 7 days
+    weekly_revenue = []
+    for i in range(6, -1, -1):
+        day_date = today - timedelta(days=i)
+        day_total = db.query(func.sum(Bill.total_amount))\
+            .filter(Bill.user_id == current_user.id, func.date(Bill.created_at) == day_date)\
+            .scalar() or 0.0
+        weekly_revenue.append(float(day_total))
+
+    # Get low stock items (threshold 5kg)
+    low_stock = db.query(Inventory).join(Vegetable).filter(
+        Inventory.user_id == current_user.id,
+        Inventory.stock_kg < 5
+    ).all()
+
     return {
-        "shopName": current_user.shop_name or "My Vegetable Shop",
+        "shopName": current_user.shop_name or "Suji Vegetables",
         "todayRetailTotal": retail_total,
         "todayWholesaleTotal": wholesale_total,
         "totalBillsToday": len(today_bills),
-        "topSellingItems": [item[0] for item in top_items]
+        "topSellingItems": [item[0] for item in top_items],
+        "weeklyRevenue": weekly_revenue,
+        "lowStockCount": len(low_stock),
+        "lowStockItems": [inv.vegetable.name for inv in low_stock]
     }
 
 @router.get("/history", response_model=List[BillResponse])

@@ -1,0 +1,13 @@
+/* App specific styles if any */
+#root {
+  width: 100%;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}

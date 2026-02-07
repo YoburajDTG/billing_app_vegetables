@@ -31,6 +31,7 @@ class Bill(Base):
     tax_amount = Column(Float, default=0.0)
     total_amount = Column(Float)
     billing_type = Column(String, default="Retail") # Wholesale or Retail
+    discount_amount = Column(Float, default=0.0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     items = relationship("BillItem", back_populates="bill")
