@@ -70,7 +70,7 @@ const CreateInvoice = () => {
     const updateQuantity = (id, newQty) => {
         if (newQty < 0.1) return;
         setItems(items.map(item =>
-            item.id === id ? { ...item, quantity: newQty, total: newQty * item.price } : item
+            item.id === id ? { ...item, quantity: Math.round(newQty * 100) / 100, total: (Math.round(newQty * 100) / 100) * item.price } : item
         ));
     };
 
@@ -290,15 +290,24 @@ const CreateInvoice = () => {
                                     </td>
                                     <td>
                                         <div className="qty-control">
-                                            <button onClick={() => updateQuantity(item.id, item.quantity - 0.5)}>-</button>
-                                            <input
-                                                type="number"
-                                                value={item.quantity}
-                                                onChange={(e) => updateQuantity(item.id, parseFloat(e.target.value))}
-                                                onFocus={(e) => e.target.select()}
-                                            />
-                                            <button onClick={() => updateQuantity(item.id, item.quantity + 0.5)}>+</button>
+                                            <button onClick={() => updateQuantity(item.id, item.quantity - 0.25)}>-</button>
+                                            <div className="qty-display-wrapper">
+                                                <input
+                                                    type="number"
+                                                    value={item.quantity}
+                                                    step="0.05"
+                                                    onChange={(e) => updateQuantity(item.id, parseFloat(e.target.value))}
+                                                    onFocus={(e) => e.target.select()}
+                                                />
+                                                <span className="qty-unit-label">
+                                                    {item.quantity < 1 ? 'g' : 'kg'}
+                                                </span>
+                                            </div>
+                                            <button onClick={() => updateQuantity(item.id, item.quantity + 0.25)}>+</button>
                                         </div>
+                                        {item.quantity < 1 && (
+                                            <div className="qty-hint">{item.quantity * 1000} g</div>
+                                        )}
                                     </td>
                                     <td>
                                         <div className="total-control-wrapper">

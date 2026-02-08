@@ -79,7 +79,12 @@ const InvoicePreview = ({ data, onClose }) => {
                                                 <span className="tamil-font"> {item.tamilName || item.tamil_name}</span>
                                             )}
                                         </td>
-                                        <td>{item.quantity || item.qty_kg} kg</td>
+                                        <td>
+                                            {(item.quantity || item.qty_kg) < 1
+                                                ? `${Math.round((item.quantity || item.qty_kg) * 1000)} g`
+                                                : `${item.quantity || item.qty_kg} kg`
+                                            }
+                                        </td>
                                         <td>{(item.price || 0).toFixed(2)}</td>
                                         <td>{(item.total || item.subtotal || 0).toFixed(2)}</td>
                                     </tr>

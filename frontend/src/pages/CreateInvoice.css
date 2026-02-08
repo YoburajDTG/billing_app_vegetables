@@ -233,7 +233,7 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     overflow: hidden;
-    width: 110px;
+    width: 130px;
 }
 
 .qty-control button {

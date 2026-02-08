@@ -135,7 +135,10 @@ def generate_bill_pdf(bill: Bill) -> BytesIO:
         if tam_name:
             item_html += f' <font color="#888888" size="9">{tam_name}</font>'
 
-        qty_text = f"{int(item.qty_kg)} kg" if item.qty_kg.is_integer() else f"{item.qty_kg:g} kg"
+        if item.qty_kg < 1:
+            qty_text = f"{int(item.qty_kg * 1000)} g"
+        else:
+            qty_text = f"{int(item.qty_kg)} kg" if item.qty_kg.is_integer() else f"{item.qty_kg:g} kg"
 
         items_data.append([
             Paragraph(item_html, tamil_style),
