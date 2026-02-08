@@ -45,7 +45,7 @@ const InvoicePreview = ({ data, onClose }) => {
                 <div className="preview-body">
                     <div className="bill-paper" ref={componentRef}>
                         <div className="bill-header">
-                            <h1>{displayShopName}</h1>
+                            <h1>Suji Vegetables</h1>
                             <p className="address">Pondy - Tindivanam Main Raod, Kiliyanur</p>
                             <p className="phone">Phone: +91 9095938085</p>
                         </div>
@@ -73,10 +73,15 @@ const InvoicePreview = ({ data, onClose }) => {
                             <tbody>
                                 {items.map((item, index) => (
                                     <tr key={index}>
-                                        <td>{item.name} <span className="tamil-font">{item.tamilName}</span></td>
-                                        <td>{item.quantity} kg</td>
-                                        <td>{item.price.toFixed(2)}</td>
-                                        <td>{item.total.toFixed(2)}</td>
+                                        <td>
+                                            {item.name || item.vegetableName}
+                                            {(item.tamilName || item.tamil_name) && (
+                                                <span className="tamil-font"> {item.tamilName || item.tamil_name}</span>
+                                            )}
+                                        </td>
+                                        <td>{item.quantity || item.qty_kg} kg</td>
+                                        <td>{(item.price || 0).toFixed(2)}</td>
+                                        <td>{(item.total || item.subtotal || 0).toFixed(2)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -84,30 +89,25 @@ const InvoicePreview = ({ data, onClose }) => {
 
                         <div className="bill-summary">
                             <div className="summary-row">
-                                <span>Subtotal:</span>
-                                <span>₹{subtotal.toFixed(2)}</span>
+                                <span className="label">Subtotal:</span>
+                                <span>₹{(subtotal).toFixed(2)}</span>
                             </div>
                             {taxAmount > 0 && (
                                 <div className="summary-row">
-                                    <span>Tax:</span>
-                                    <span>₹{taxAmount.toFixed(2)}</span>
+                                    <span className="label">Tax:</span>
+                                    <span>₹{(taxAmount).toFixed(2)}</span>
                                 </div>
                             )}
                             {discountAmount > 0 && (
                                 <div className="summary-row">
-                                    <span>Discount:</span>
-                                    <span>- ₹{discountAmount.toFixed(2)}</span>
+                                    <span className="label">Discount:</span>
+                                    <span>- ₹{(discountAmount).toFixed(2)}</span>
                                 </div>
                             )}
                             <div className="summary-row grand-total">
-                                <span>Grand Total:</span>
-                                <span>₹{grandTotal.toFixed(2)}</span>
+                                <span className="label">Grand Total:</span>
+                                <span>₹{(grandTotal).toFixed(2)}</span>
                             </div>
-                        </div>
-
-                        <div className="bill-footer">
-                            <p>Thank you for shopping with us!</p>
-                            <p>Visit Again.</p>
                         </div>
                     </div>
                 </div>

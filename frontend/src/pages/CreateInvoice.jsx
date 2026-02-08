@@ -5,8 +5,10 @@ import {
     Search,
     Save,
     Printer,
+    Calendar,
     X,
-    ChevronDown
+    ChevronDown,
+    FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { inventoryApi, billingApi } from '../services/api';
@@ -25,6 +27,7 @@ const CreateInvoice = () => {
     const [success, setSuccess] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
     const [showResults, setShowResults] = useState(false);
+    const [savedBill, setSavedBill] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -76,10 +79,17 @@ const CreateInvoice = () => {
             item.id === id ? {
                 ...item,
                 total: newTotal,
-                price: newTotal / item.quantity // Recalculate price implicitly? Or just update total?
-                // For now let's just update total. Wait, if total changes and quantity is fixed, price implies change.
-                // But backend stores price. So we should update price too to be consistent.
-                // price = total / quantity
+                price: item.quantity > 0 ? newTotal / item.quantity : 0
+            } : item
+        ));
+    };
+
+    const updatePrice = (id, newPrice) => {
+        setItems(items.map(item =>
+            item.id === id ? {
+                ...item,
+                price: newPrice,
+                total: newPrice * item.quantity
             } : item
         ));
     };
@@ -109,6 +119,7 @@ const CreateInvoice = () => {
                 grand_total: calculateTotal()
             };
             const response = await billingApi.createBill(billData);
+            setSavedBill(response.data);
             setSuccess(true);
             setItems([]);
             setCustomerName('');
@@ -122,15 +133,38 @@ const CreateInvoice = () => {
     };
 
     // Enhanced filter with Tanglish support
-    const filteredInventory = inventory.filter(veg => {
-        if (!searchTerm) return true; // Show all if no search term but dropdown is open
-        const lowerSearch = searchTerm.toLowerCase();
-        const tanglishEquivalent = searchWithTanglish(searchTerm);
+    const PRIORITY_ORDER = ['Green Chili', 'Tomato', 'Onion', 'Potato', 'Green Beans', 'Carrot'];
 
-        return veg.name.toLowerCase().includes(lowerSearch) ||
-            veg.name.toLowerCase().includes(tanglishEquivalent) ||
-            (veg.tamilName && veg.tamilName.toLowerCase().includes(lowerSearch));
-    });
+    const filteredInventory = inventory
+        .filter(veg => {
+            if (!searchTerm) return true;
+            const lowerSearch = searchTerm.toLowerCase();
+            const tanglishEquivalent = searchWithTanglish(searchTerm);
+
+            return veg.name.toLowerCase().includes(lowerSearch) ||
+                veg.name.toLowerCase().includes(tanglishEquivalent) ||
+                (veg.tamilName && veg.tamilName.toLowerCase().includes(lowerSearch));
+        })
+        .sort((a, b) => {
+            const getPriorityIndex = (name) => {
+                if (name === 'Green Chili' || name === 'Green Chilly') return 0;
+                if (name === 'Tomato') return 1;
+                if (name === 'Onion') return 2;
+                if (name === 'Potato') return 3;
+                if (name === 'Green Beans' || name === 'Beans') return 4;
+                if (name === 'Carrot') return 5;
+                return -1;
+            };
+
+            const indexA = getPriorityIndex(a.name);
+            const indexB = getPriorityIndex(b.name);
+
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+
+            return a.name.localeCompare(b.name);
+        });
 
     // Close dropdown on click outside
     useEffect(() => {
@@ -242,7 +276,18 @@ const CreateInvoice = () => {
                                             <div className="name-sub">{item.tamilName}</div>
                                         </div>
                                     </td>
-                                    <td>₹{(item.price).toFixed(2)}</td>
+                                    <td>
+                                        <div className="price-control-wrapper">
+                                            <span>₹</span>
+                                            <input
+                                                type="number"
+                                                className="price-manual-input"
+                                                value={item.price}
+                                                onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
+                                                onFocus={(e) => e.target.select()}
+                                            />
+                                        </div>
+                                    </td>
                                     <td>
                                         <div className="qty-control">
                                             <button onClick={() => updateQuantity(item.id, item.quantity - 0.5)}>-</button>
@@ -250,6 +295,7 @@ const CreateInvoice = () => {
                                                 type="number"
                                                 value={item.quantity}
                                                 onChange={(e) => updateQuantity(item.id, parseFloat(e.target.value))}
+                                                onFocus={(e) => e.target.select()}
                                             />
                                             <button onClick={() => updateQuantity(item.id, item.quantity + 0.5)}>+</button>
                                         </div>
@@ -262,6 +308,7 @@ const CreateInvoice = () => {
                                                 className="total-manual-input"
                                                 value={item.total}
                                                 onChange={(e) => updateItemTotal(item.id, parseFloat(e.target.value) || 0)}
+                                                onFocus={(e) => e.target.select()}
                                             />
                                         </div>
                                     </td>
@@ -337,7 +384,7 @@ const CreateInvoice = () => {
 
             {showPreview && (
                 <InvoicePreview
-                    data={{
+                    data={success && savedBill ? savedBill : {
                         customerName,
                         billingType,
                         items,
@@ -346,25 +393,41 @@ const CreateInvoice = () => {
                         discountAmount: discount,
                         grandTotal: calculateTotal()
                     }}
-                    onClose={() => setShowPreview(false)}
+                    onClose={() => {
+                        setShowPreview(false);
+                        if (success) setSuccess(false); // Close both if printing from success
+                    }}
                 />
             )}
 
             {success && (
                 <div className="modal-overlay">
-                    <div className="card modal-content">
-                        <div className="success-icon">✅</div>
-                        <h2>Invoice Created!</h2>
-                        <p>Invoice has been saved successfully.</p>
-                        <div className="modal-actions">
-                            <button className="btn btn-primary" onClick={() => setSuccess(false)}>Create New</button>
+                    <div className="card modal-content success-modal">
+                        <div className="success-lottie">
+                            <div className="success-icon">✅</div>
+                        </div>
+                        <h2>Bill Saved Successfully!</h2>
+                        <p>Invoice <strong>{savedBill?.billNumber || savedBill?.bill_number}</strong> has been recorded.</p>
+
+                        <div className="modal-actions-grid">
+                            <button className="btn btn-primary" onClick={() => {
+                                setShowPreview(true);
+                                // Note: we'll show the saved bill in the preview
+                            }}>
+                                <Printer size={18} /> Print Invoice
+                            </button>
+                            <button className="btn btn-outline" onClick={() => setSuccess(false)}>
+                                <Plus size={18} /> Create New
+                            </button>
                             <button
                                 className="btn btn-outline"
                                 onClick={() => {
                                     setSuccess(false);
                                     navigate('/invoices');
                                 }}
-                            >View History</button>
+                            >
+                                <FileText size={18} /> View History
+                            </button>
                         </div>
                         <button className="close-modal" onClick={() => setSuccess(false)}><X size={20} /></button>
                     </div>

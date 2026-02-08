@@ -10,7 +10,8 @@ import {
     Trash2,
     X,
     Check,
-    Search
+    Search,
+    ArrowLeft
 } from 'lucide-react';
 import { inventoryApi } from '../services/api';
 import './Inventory.css';
@@ -43,12 +44,36 @@ const Inventory = () => {
         fetchInventory();
     }, []);
 
-    const filteredItems = items.filter(item => {
-        const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (item.tamilName && item.tamilName.toLowerCase().includes(searchTerm.toLowerCase()));
-        const matchesStock = showLowStockOnly ? item.stock < LOW_STOCK_THRESHOLD : true;
-        return matchesSearch && matchesStock;
-    });
+    const PRIORITY_ORDER = ['Green Chili', 'Tomato', 'Onion', 'Potato', 'Green Beans', 'Carrot'];
+
+    const filteredItems = items
+        .filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (item.tamilName && item.tamilName.toLowerCase().includes(searchTerm.toLowerCase()));
+            const matchesStock = showLowStockOnly ? item.stock < LOW_STOCK_THRESHOLD : true;
+            return matchesSearch && matchesStock;
+        })
+        .sort((a, b) => {
+            const getPriorityIndex = (name) => {
+                const n = name.toLowerCase();
+                if (n.includes('green chili') || n.includes('green chilly') || n === 'green chilly' || n === 'green chili') return 0;
+                if (n === 'tomato') return 1;
+                if (n === 'onion') return 2;
+                if (n === 'potato') return 3;
+                if (n.includes('beans') || n === 'beans') return 4;
+                if (n === 'carrot') return 5;
+                return -1;
+            };
+
+            const indexA = getPriorityIndex(a.name);
+            const indexB = getPriorityIndex(b.name);
+
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+
+            return a.name.localeCompare(b.name);
+        });
 
     const lowStockItems = items.filter(item => item.stock < LOW_STOCK_THRESHOLD);
 
@@ -176,14 +201,22 @@ const Inventory = () => {
                     </div>
                 </div>
                 <div className="header-actions">
-                    <button
-                        className={`btn ${showLowStockOnly ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => setShowLowStockOnly(!showLowStockOnly)}
-                        style={showLowStockOnly ? { backgroundColor: '#ef4444', borderColor: '#ef4444' } : {}}
-                    >
-                        <AlertTriangle size={18} />
-                        Low Stock {lowStockItems.length > 0 && <span className="count-badge">{lowStockItems.length}</span>}
-                    </button>
+                    {showLowStockOnly && (
+                        <button className="btn btn-outline" onClick={() => setShowLowStockOnly(false)}>
+                            <ArrowLeft size={18} />
+                            All Items
+                        </button>
+                    )}
+
+                    {!showLowStockOnly && (
+                        <button
+                            className="btn btn-outline low-stock-btn"
+                            onClick={() => setShowLowStockOnly(true)}
+                        >
+                            <AlertTriangle size={18} />
+                            Low Stock {lowStockItems.length > 0 && <span className="count-badge">{lowStockItems.length}</span>}
+                        </button>
+                    )}
                     <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
                         <Plus size={18} />
                         Add Item
@@ -297,77 +330,86 @@ const Inventory = () => {
 
             {showAddModal && (
                 <div className="modal-overlay">
-                    <div className="card modal-content" style={{ maxWidth: '500px' }}>
-                        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <div className="card modal-content premium-modal">
+                        <div className="modal-header">
                             <h2>Add New Item</h2>
-                            <button onClick={() => setShowAddModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                                <X size={24} />
+                            <button className="close-modal" onClick={() => setShowAddModal(false)}>
+                                <X size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleAddItem}>
-                            {/* ... same form fields ... */}
-                            <div className="form-group">
-                                <label>Name (English)</label>
-                                <input
-                                    type="text"
-                                    value={newItem.name}
-                                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                                    required
-                                    placeholder="e.g. Tomato"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Name (Tamil)</label>
-                                <input
-                                    type="text"
-                                    value={newItem.tamilName}
-                                    onChange={(e) => setNewItem({ ...newItem, tamilName: e.target.value })}
-                                    placeholder="e.g. தக்காளி"
-                                />
-                            </div>
-                            <div className="form-grid">
+                            <div className="form-section">
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Name (English)</label>
+                                        <input
+                                            type="text"
+                                            value={newItem.name}
+                                            onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                                            required
+                                            placeholder="e.g. Tomato"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Name (Tamil)</label>
+                                        <input
+                                            type="text"
+                                            value={newItem.tamilName}
+                                            onChange={(e) => setNewItem({ ...newItem, tamilName: e.target.value })}
+                                            placeholder="e.g. தக்காளி"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Price (₹/kg)</label>
+                                        <input
+                                            type="number"
+                                            value={newItem.price}
+                                            onChange={(e) => setNewItem({ ...newItem, price: parseFloat(e.target.value) })}
+                                            onFocus={(e) => e.target.select()}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Initial Stock (kg)</label>
+                                        <input
+                                            type="number"
+                                            value={newItem.stock}
+                                            onChange={(e) => setNewItem({ ...newItem, stock: parseFloat(e.target.value) })}
+                                            onFocus={(e) => e.target.select()}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="form-group">
-                                    <label>Price</label>
+                                    <label>Category</label>
+                                    <select
+                                        value={newItem.category}
+                                        onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                                    >
+                                        <option value="Vegetables">Vegetables</option>
+                                        <option value="Fruits">Fruits</option>
+                                        <option value="Leafy">Leafy Greens</option>
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Image URL</label>
                                     <input
-                                        type="number"
-                                        value={newItem.price}
-                                        onChange={(e) => setNewItem({ ...newItem, price: parseFloat(e.target.value) })}
-                                        required
+                                        type="text"
+                                        value={newItem.image}
+                                        onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
+                                        placeholder="https://..."
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Initial Stock (kg)</label>
-                                    <input
-                                        type="number"
-                                        value={newItem.stock}
-                                        onChange={(e) => setNewItem({ ...newItem, stock: parseFloat(e.target.value) })}
-                                        required
-                                    />
-                                </div>
+
+                                <button type="submit" className="btn submit-btn">
+                                    <Plus size={18} /> Add to Inventory
+                                </button>
                             </div>
-                            <div className="form-group">
-                                <label>Category</label>
-                                <select
-                                    value={newItem.category}
-                                    onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                                >
-                                    <option value="Vegetables">Vegetables</option>
-                                    <option value="Fruits">Fruits</option>
-                                    <option value="Leafy">Leafy Greens</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Image URL</label>
-                                <input
-                                    type="text"
-                                    value={newItem.image}
-                                    onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
-                                    placeholder="https://..."
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-primary full-width" style={{ marginTop: '20px' }}>
-                                Add Item
-                            </button>
                         </form>
                     </div>
                 </div>

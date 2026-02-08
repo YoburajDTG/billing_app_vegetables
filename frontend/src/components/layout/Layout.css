@@ -27,11 +27,12 @@
 }
 
 .sidebar-header {
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     height: var(--header-height);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .logo-container {
@@ -164,7 +165,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 2rem;
+    padding: 0 1.5rem;
     position: sticky;
     top: 0;
     z-index: 90;
@@ -176,7 +177,7 @@
 }
 
 .page-content {
-    padding: 2rem;
+    padding: 1.25rem;
     flex: 1;
     overflow-y: auto;
 }
