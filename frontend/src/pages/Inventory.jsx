@@ -34,6 +34,7 @@ const Inventory = () => {
     const [newItem, setNewItem] = useState({
         name: '',
         tamilName: '',
+        tanglishName: '',
         category: 'Vegetables',
         price: 0,
         stock: 0,
@@ -49,7 +50,8 @@ const Inventory = () => {
     const filteredItems = items
         .filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (item.tamilName && item.tamilName.toLowerCase().includes(searchTerm.toLowerCase()));
+                (item.tamilName && item.tamilName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (item.tanglishName && item.tanglishName.toLowerCase().includes(searchTerm.toLowerCase()));
             const matchesStock = showLowStockOnly ? item.stock < LOW_STOCK_THRESHOLD : true;
             return matchesSearch && matchesStock;
         })
@@ -174,6 +176,7 @@ const Inventory = () => {
             setNewItem({
                 name: '',
                 tamilName: '',
+                tanglishName: '',
                 category: 'Vegetables',
                 price: 0,
                 stock: 0,
@@ -263,7 +266,7 @@ const Inventory = () => {
                             <div className="item-img">{item.image ? <img src={item.image} alt={item.name} style={{ width: 30, height: 30, borderRadius: '50%' }} onError={(e) => e.target.style.display = 'none'} /> : '🥕'}</div>
                             <div className="item-title">
                                 <h3>{item.name}</h3>
-                                <span>{item.tamilName}</span>
+                                <span>{item.tamilName} {item.tanglishName && `(${item.tanglishName})`}</span>
                             </div>
                             <div className="card-actions" style={{ display: 'flex', gap: '5px' }}>
                                 <button className="edit-icon" onClick={() => handleEdit(item)}>
@@ -339,7 +342,7 @@ const Inventory = () => {
                         </div>
                         <form onSubmit={handleAddItem}>
                             <div className="form-section">
-                                <div className="form-row">
+                                <div className="form-row names-row">
                                     <div className="form-group">
                                         <label>Name (English)</label>
                                         <input
@@ -357,6 +360,15 @@ const Inventory = () => {
                                             value={newItem.tamilName}
                                             onChange={(e) => setNewItem({ ...newItem, tamilName: e.target.value })}
                                             placeholder="e.g. தக்காளி"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Name (Tanglish)</label>
+                                        <input
+                                            type="text"
+                                            value={newItem.tanglishName}
+                                            onChange={(e) => setNewItem({ ...newItem, tanglishName: e.target.value })}
+                                            placeholder="e.g. Thakkali"
                                         />
                                     </div>
                                 </div>

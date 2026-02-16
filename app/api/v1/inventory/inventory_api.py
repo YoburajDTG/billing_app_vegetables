@@ -65,6 +65,7 @@ async def bulk_sync_inventory(
             veg = Vegetable(
                 name=item.name,
                 tamil_name=item.tamil_name,
+                tanglish_name=item.tanglish_name,
                 category=item.category,
                 image_url=item.image,
                 price_per_kg=item.price
@@ -74,6 +75,7 @@ async def bulk_sync_inventory(
         else:
             # Update master details if they changed
             veg.tamil_name = item.tamil_name
+            veg.tanglish_name = item.tanglish_name
             veg.category = item.category
             veg.image_url = item.image
 
@@ -156,6 +158,7 @@ async def get_inventory(
             "vegetableId": veg.id,
             "name": veg.name,
             "tamilName": veg.tamil_name,
+            "tanglishName": veg.tanglish_name,
             "price": item.price_per_kg,
             "stock": item.stock_kg,
             "wholesalePrice": item.wholesale_price,

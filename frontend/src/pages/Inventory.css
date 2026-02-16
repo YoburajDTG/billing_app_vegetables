@@ -425,15 +425,39 @@
 
 .modal-content.premium-modal .modal-header {
     background: rgba(255, 255, 255, 0.03);
-    padding: 1rem 1.5rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .modal-content.premium-modal .modal-header h2 {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+    opacity: 0.8;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+    transform: rotate(90deg);
 }
 
 .modal-content.premium-modal form {
@@ -488,6 +512,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.25rem;
+}
+
+.modal-content.premium-modal .names-row {
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .modal-content.premium-modal .submit-btn {

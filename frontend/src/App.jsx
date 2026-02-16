@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import CreateInvoice from './pages/CreateInvoice';
 import Invoices from './pages/Invoices';
 import Inventory from './pages/Inventory';
+import Customers from './pages/Customers';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import useAuthStore from './store/useAuthStore';
@@ -50,6 +51,14 @@ function App() {
           <ProtectedRoute>
             <MainLayout>
               <Inventory />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/customers" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Customers />
             </MainLayout>
           </ProtectedRoute>
         } />

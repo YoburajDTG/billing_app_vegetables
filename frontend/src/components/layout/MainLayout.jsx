@@ -9,8 +9,10 @@ import {
     Menu,
     X,
     ChevronRight,
-    User
+    User,
+    Users
 } from 'lucide-react';
+import logo from '../../assets/login_logo.png';
 import useAuthStore from '../../store/useAuthStore';
 import './Layout.css';
 
@@ -25,6 +27,7 @@ const MainLayout = ({ children }) => {
         { name: 'New Invoice', icon: PlusCircle, path: '/invoice/new' },
         { name: 'Invoices History', icon: IndianRupee, path: '/invoices' },
         { name: 'Inventory', icon: Store, path: '/inventory' },
+        { name: 'Customers', icon: Users, path: '/customers' },
     ];
 
     const handleLogout = () => {
@@ -38,8 +41,10 @@ const MainLayout = ({ children }) => {
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
                     <div className="logo-container">
-                        <div className="logo-icon"></div>
-                        <span className="logo-text">Billing App</span>
+                        <div className="logo-icon logo-img-container">
+                            <img src={logo} alt="Suji Vegetables" className="sidebar-logo-img" />
+                        </div>
+                        <span className="logo-text">Suji Vegetables</span>
                     </div>
                     <button className="sidebar-toggle" onClick={() => setSidebarOpen(!isSidebarOpen)}>
                         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
