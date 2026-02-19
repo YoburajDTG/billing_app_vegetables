@@ -593,16 +593,17 @@
     background: linear-gradient(135deg, rgba(255, 141, 0, 0.1) 0%, rgba(255, 141, 0, 0.02) 100%);
     border: 1px solid rgba(255, 141, 0, 0.2);
     border-radius: 1rem;
-    padding: 1.25rem;
+    padding: 0.9rem 1rem;
     text-align: center;
+    margin-bottom: 0.5rem;
 }
 
 .total-label {
     display: block;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 
 .total-value-main {
@@ -613,13 +614,13 @@
 }
 
 .total-value-main .currency {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: var(--premium-orange);
 }
 
 .total-value-main .amount {
     font-family: 'Outfit', sans-serif;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 800;
     color: white;
 }
@@ -636,6 +637,12 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.summary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .btn-primary-gradient {

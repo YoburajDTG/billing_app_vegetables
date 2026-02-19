@@ -131,7 +131,7 @@ const CreateInvoice = () => {
                     setCustomerName(response.data.name);
                     setLookupStatus('found');
                 }
-            } catch (error) {
+            } catch (_error) {
                 console.log('Customer not found');
                 setLookupStatus('not_found');
             } finally {
@@ -433,10 +433,11 @@ const CreateInvoice = () => {
                         <div className="summary-item discount-row">
                             <span className="label">Discount</span>
                             <div className="discount-input-premium">
-                                <span>- ₹</span>
+                                <span>₹</span>
                                 <input
                                     type="number"
                                     min="0"
+                                    placeholder="Enter amount"
                                     value={discount}
                                     onChange={(e) => setDiscount(Math.max(0, parseFloat(e.target.value) || 0))}
                                 />
